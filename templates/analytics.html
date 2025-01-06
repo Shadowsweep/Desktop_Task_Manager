@@ -1,11 +1,13 @@
+<!-- templates/analytics.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Management Dashboard</title>
+    <title>Task Analytics Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include the same styles as index.html -->
 
     <style>
         * {
@@ -367,7 +369,7 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar -->
+        <!-- Same sidebar as index.html -->
         <div class="sidebar">
             <div class="sidebar-header">
                 <h2>Task Manager</h2>
@@ -398,119 +400,161 @@
             </div>
         </div>
 
-        <!-- Main Content Area -->
+        <!-- Analytics Content -->
         <div class="main-content">
-            <!-- Header Section -->
             <div class="content-header">
-                <h1 class="content-title">Task Management Dashboard</h1>
-                <div class="header-actions">
-                    <button class="button add-button" onclick="toggleForm()">
-                        <i class="fas fa-plus"></i> Add Task
-                    </button>
+                <h1 class="content-title">Task Analytics</h1>
+                <div class="filter-group">
+                    <button class="filter-button active" data-filter="all">All Time</button>
+                    <button class="filter-button" data-filter="24h">Last 24h</button>
+                    <button class="filter-button" data-filter="7d">Last 7 Days</button>
+                    <button class="filter-button" data-filter="30d">Last 30 Days</button>
                 </div>
             </div>
 
-            <!-- Task Management Section -->
-            <div class="task-container">
-                <!-- Search Bar -->
-                <div class="search-container">
-                    <form action="{{ url_for('index') }}" method="get">
-                        <input type="text" name="search" placeholder="Search tasks..." value="{{ search_query }}">
-                    </form>
-                </div>
-
-                <!-- Add Task Form -->
-                <div class="task-form" id="taskForm">
-                    <form action="{{ url_for('add_task') }}" method="post">
-                        <div class="form-row">
-                            <label>Task Title</label>
-                            <input type="text" name="title" required>
+            <div class="analytics-grid">
+                <!-- Summary Cards -->
+                <div class="analytics-container">
+                    <div class="stat-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalTasks">{{ analytics.total_tasks }}</div>
+                            <div class="stat-label">Total Tasks</div>
                         </div>
-                        
-                        <div class="form-row">
-                            <label>Importance</label>
-                            <select name="importance" required>
-                                <option value="low">Low Priority</option>
-                                <option value="medium">Medium Priority</option>
-                                <option value="high">High Priority</option>
-                            </select>
+                        <div class="stat-card">
+                            <div class="stat-value" id="completedTasks">{{ analytics.completed_tasks }}</div>
+                            <div class="stat-label">Completed</div>
                         </div>
-                        <button type="submit" class="button save-button">
-                            <i class="fas fa-save"></i> SAVE TASK
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Task List -->
-                <div class="task-list">
-                    {% for task in tasks %}
-                    <div class="task-item {{ task['importance'] }} {% if task['status'] == 'completed' %}completed{% endif %}">
-                        <div class="task-info">
-                            <div class="task-title">{{ task['title'] }}</div>
-                            <div class="task-details">
-                                <div class="detail-item">
-                                    <i class="fas fa-clock"></i>
-                                    Start Time: {{ task['start_time'] }}
-                                </div>
-                                {% if task['completion_time'] %}
-                                <div class="detail-item">
-                                    <i class="fas fa-check-circle"></i>
-                                    Completion Time: {{ task['completion_time'] }}
-                                </div>
-                                <div class="detail-item">
-                                    <i class="fas fa-hourglass-end"></i>
-                                    Time Taken: {{ task['time_taken'] }}
-                                </div>
-                                {% endif %}
-                            </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="pendingTasks">{{ analytics.pending_tasks }}</div>
+                            <div class="stat-label">Pending</div>
                         </div>
-                        <div class="task-actions">
-                            {% if task['status'] == 'pending' %}
-                            <form action="{{ url_for('complete_task', task_id=task['id']) }}" method="post" style="display: inline;">
-                                <button type="submit" class="button complete-button">
-                                    <i class="fas fa-check"></i> Complete
-                                </button>
-                            </form>
-                            {% endif %}
-                            <form action="{{ url_for('delete_task', task_id=task['id']) }}" method="post" style="display: inline;">
-                                <button type="submit" class="button delete-button">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </form>
+                        <div class="stat-card">
+                            <div class="stat-value" id="avgCompletionTime">{{ analytics.avg_completion_time }}h</div>
+                            <div class="stat-label">Avg Completion Time</div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
 
-                <!-- Clear All Tasks Button -->
-                <div style="height: 20px;">&nbsp;
+                <!-- Charts -->
+                <div class="analytics-container">
+                    <div class="chart-container">
+                        <canvas id="priorityChart"></canvas>
+                        
+                    </div>
+                   <div class="analytics-container">
+                    <div class="chart-container">
+                        <canvas id="completionChart"></canvas>
+                    </div>
                 </div>
-                <div class="clear-all-container">
-                    <form action="{{ url_for('delete_all_tasks') }}" method="post">
-                        <button type="submit" class="button delete-button">
-                            <i class="fas fa-trash-alt"></i> DELETE ALL TASKS
-                        </button>
-                    </form>
                 </div>
+
+    
             </div>
         </div>
     </div>
 
     <script>
-        // Toggle Add Task Form
-        function toggleForm() {
-            var form = document.getElementById('taskForm');
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        // Previous script content remains
+
+        // Initialize charts
+        function initializeCharts(data) {
+            // Priority Distribution Chart
+            const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+            const priorityChart = new Chart(priorityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [
+                            data.priority_distribution.high,
+                            data.priority_distribution.medium,
+                            data.priority_distribution.low
+                        ],
+                        backgroundColor: ['#ff6b6b', '#ffd93d', '#6bff6b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Task Priority Distribution'
+                        }
+                    }
+                }
+            });
+
+            // Completion Status Chart
+            const completionCtx = document.getElementById('completionChart').getContext('2d');
+            const completionChart = new Chart(completionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Completed', 'Pending'],
+                    datasets: [{
+                        data: [data.completed_tasks, data.pending_tasks],
+                        backgroundColor: ['#4CAF50', '#ff9800']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Task Completion Status'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            return { priorityChart, completionChart };
         }
 
-        // Optional: Add confirmation for delete actions
-        document.querySelectorAll('.delete-button').forEach(button => {
-            button.addEventListener('click', function(e) {
-                if (!confirm('Are you sure you want to delete this task?')) {
-                    e.preventDefault();
-                }
+        // Update charts with new data
+        function updateCharts(charts, data) {
+            charts.priorityChart.data.datasets[0].data = [
+                data.priority_distribution.high,
+                data.priority_distribution.medium,
+                data.priority_distribution.low
+            ];
+            charts.priorityChart.update();
+
+            charts.completionChart.data.datasets[0].data = [
+                data.completed_tasks,
+                data.pending_tasks
+            ];
+            charts.completionChart.update();
+        }
+
+        // Initialize charts with initial data
+        let charts = initializeCharts({{ analytics|tojson }});
+
+        // Handle filter buttons
+        document.querySelectorAll('.filter-button').forEach(button => {
+            button.addEventListener('click', async () => {
+                // Update active state
+                document.querySelectorAll('.filter-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                // Fetch new data
+                const response = await fetch(`/get_analytics?time_filter=${button.dataset.filter}`);
+                const data = await response.json();
+
+                // Update stats
+                document.getElementById('totalTasks').textContent = data.total_tasks;
+                document.getElementById('completedTasks').textContent = data.completed_tasks;
+                document.getElementById('pendingTasks').textContent = data.pending_tasks;
+
+                // Update charts
+                updateCharts(charts, data);
             });
         });
     </script>
+
+
 </body>
 </html>

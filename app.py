@@ -1,6 +1,6 @@
 # app.py
 from flask import Flask, render_template, request, jsonify, redirect, url_for
-from datetime import datetime
+from datetime import datetime , timedelta
 import csv
 import os
 import uuid
@@ -10,6 +10,83 @@ app = Flask(__name__)
 # CSV file setup
 TASKS_FILE = 'tasks.csv'
 FIELDNAMES = ['id', 'title', 'start_time', 'completion_time', 'time_taken', 'importance', 'status', 'created_at']
+
+
+def get_analytics_data(time_filter='all'):
+    tasks = get_tasks()
+    now = datetime.now()
+    
+    if time_filter == '24h':
+        cutoff = now - timedelta(days=1)
+    elif time_filter == '7d':
+        cutoff = now - timedelta(days=7)
+    elif time_filter == '30d':
+        cutoff = now - timedelta(days=30)
+    else:
+        cutoff = datetime.min
+    
+    # Convert string dates to datetime objects for comparison
+    filtered_tasks = []
+    for task in tasks:
+        try:
+            task_date = datetime.strptime(task['created_at'], '%Y-%m-%d %H:%M')
+            if task_date >= cutoff:
+                filtered_tasks.append(task)
+        except (ValueError, TypeError):
+            continue
+
+    # Calculate analytics
+    total_tasks = len(filtered_tasks)
+    completed_tasks = len([t for t in filtered_tasks if t['status'] == 'completed'])
+    pending_tasks = total_tasks - completed_tasks
+    
+    # Priority distribution
+    priority_dist = {
+        'high': len([t for t in filtered_tasks if t['importance'] == 'high']),
+        'medium': len([t for t in filtered_tasks if t['importance'] == 'medium']),
+        'low': len([t for t in filtered_tasks if t['importance'] == 'low'])
+    }
+    print(filtered_tasks)  # Check if tasks are being filtered correctly.
+     
+    
+    # Average completion time
+    completion_times = []
+    for task in filtered_tasks:
+        if task['status'] == 'completed' and task['time_taken']:
+            try:
+                hours = float(task['time_taken'].split()[0])
+                completion_times.append(hours)
+            except (ValueError, IndexError):
+                continue
+    
+    avg_completion_time = sum(completion_times) / len(completion_times) if completion_times else 0
+    
+    return {
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'pending_tasks': pending_tasks,
+        'priority_distribution': priority_dist,
+        'avg_completion_time': round(avg_completion_time, 2)
+    }
+
+@app.route('/get_analytics')
+def get_analytics():
+    time_filter = request.args.get('time_filter', 'all')
+    return jsonify(get_analytics_data(time_filter))
+
+
+
+
+@app.route('/analytics')
+def analytics():
+    analytics_data = get_analytics_data()
+    return render_template('analytics.html', analytics=analytics_data)
+
+@app.route('/api/analytics')
+def get_analytics_api():
+    time_filter = request.args.get('time_filter', 'all')
+    return jsonify(get_analytics_data(time_filter))
+
 
 def init_csv():
     if not os.path.exists(TASKS_FILE):
