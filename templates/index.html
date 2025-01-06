@@ -1,0 +1,268 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f0f0;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            background-color: #9370DB;
+        }
+
+        .task-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .add-button {
+            background-color: white;
+            color: black;
+        }
+
+        .delete-button {
+            background-color: white;
+            color: black;
+        }
+
+        .complete-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .task-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .form-row {
+            margin-bottom: 15px;
+        }
+
+        .form-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-row input,
+        .form-row select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .save-button {
+            background-color: #90EE90;
+            color: black;
+            width: 100%;
+        }
+
+        .task-list {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .task-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .task-item.high {
+            background-color: #ffebee;
+        }
+
+        .task-item.medium {
+            background-color: #fff3e0;
+        }
+
+        .task-item.low {
+            background-color: #e8f5e9;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .task-details {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .completed {
+            opacity: 0.7;
+            background-color: #f0f0f0 !important;
+        }
+        .error-message {
+            color: red;
+            margin-top: 5px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>TASK MANAGEMENT APP</h1>
+        </div>
+
+        <div class="main-content">
+            <div class="task-container">
+                <div class="task-header">
+                    <h2>YOUR TASKS</h2>
+                    <div class="button-group">
+                        <button class="button add-button" onclick="toggleForm()">ADD TASK</button>
+                        <form action="{{ url_for('delete_all_tasks') }}" method="post" style="display: inline;">
+                            <button type="submit" class="button delete-button">DELETE TASKS</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="search-container">
+                    <form action="{{ url_for('index') }}" method="get">
+                        <input type="text" name="search" placeholder="Search tasks..." value="{{ search_query }}">
+                    </form>
+                </div>
+
+                <div class="task-form" id="taskForm">
+                    <form action="{{ url_for('add_task') }}" method="post">
+                        <div class="form-row">
+                            <label>Task Title</label>
+                            <input type="text" name="title" required>
+                        </div>
+                       
+                        <div class="form-row">
+                            <label>Importance</label>
+                            <select name="importance" required>
+                                <option value="low">Low Priority</option>
+                                <option value="medium">Medium Priority</option>
+                                <option value="high">High Priority</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="button save-button">SAVE TASK</button>
+                    </form>
+                </div>
+
+                <div class="task-list">
+                    {% for task in tasks %}
+                        <div class="task-item {{ task['importance'] }} {% if task['status'] == 'completed' %}completed{% endif %}">
+                            <div class="task-info">
+                                <div class="task-title">{{ task['title'] }}</div>
+                                <div class="task-details">
+                                    Start Time: {{ task['start_time'] }}
+                                    {% if task['completion_time'] %}
+                                        <br>Completion Time: {{ task['completion_time'] }}
+                                        <br>Time Taken: {{ task['time_taken'] }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                {% if task['status'] == 'pending' %}
+                                    <form action="{{ url_for('complete_task', task_id=task['id']) }}" method="post" style="display: inline;">
+                                        <button type="submit" class="button complete-button">Complete</button>
+                                    </form>
+                                {% endif %}
+                                <form action="{{ url_for('delete_task', task_id=task['id']) }}" method="post" style="display: inline;">
+                                    <button type="submit" class="button delete-button">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleForm() {
+            var form = document.getElementById('taskForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

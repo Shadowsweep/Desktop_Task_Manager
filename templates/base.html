@@ -1,0 +1,63 @@
+<style>
+    /* Reset styles */
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(145deg, #d4d4d4, #f0f0f0);
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Button container for centering */
+.button-container {
+  text-align: center;
+}
+
+/* 3D Button styles */
+.button-3d {
+  position: relative;
+  background: linear-gradient(145deg, #6c63ff, #483dff);
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 8px #4a4aff;
+}
+
+.button-3d:active {
+  transform: translateY(6px);
+  box-shadow: 0 2px #3a3aaa;
+}
+
+.button-3d:hover {
+  filter: brightness(1.1);
+}
+
+/* Add some depth with text-shadow */
+.button-3d span {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Button</title>
+  {% comment %} <link rel="stylesheet" href="styles.css"> {% endcomment %}
+  
+</head>
+
+<body>
+  <div class="button-container">
+    <button class="button-3d">Click Me</button>
+  </div>
+</body>
+</html>

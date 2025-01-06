@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="timer">
+        <h2>Pomodoro Timer</h2>
+        <div id="clock">
+            <span id="minutes">25</span>:<span id="seconds">00</span>
+        </div>
+        <button onclick="startTimer()">Start</button>
+        <button onclick="resetTimer()">Reset</button>
+    </div>
+    <div class="tasks">
+        <h2>Task List</h2>
+        <form action="/add_task" method="POST">
+            <input type="text" name="task" placeholder="Add new task" required>
+            <button type="submit">Add Task</button>
+        </form>
+        <ul>
+            {% for task in tasks %}
+                <li>
+                    {{ task }}
+                    <a href="/delete_task/{{ task }}">Delete</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
