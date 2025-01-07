@@ -395,7 +395,7 @@
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="user-info">
-                    <div>TECH UNSATISFIED</div>
+                    <div>User Dashboard</div>
                 </div>
             </div>
         </div>
@@ -439,15 +439,21 @@
                 <div class="analytics-container">
                     <div class="chart-container">
                         <canvas id="priorityChart"></canvas>
-                        
                     </div>
-                   <div class="analytics-container">
+                
+
+                <div class="analytics-container">
                     <div class="chart-container">
                         <canvas id="completionChart"></canvas>
                     </div>
                 </div>
-                </div>
 
+                <div class="analytics-container">
+                    <div class="chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+ 
     
             </div>
         </div>
@@ -460,6 +466,7 @@
         function initializeCharts(data) {
             // Priority Distribution Chart
             const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+            const timelineCtx = document.getElementById('timelineChart').getContext('2d');
             const priorityChart = new Chart(priorityCtx, {
                 type: 'doughnut',
                 data: {
@@ -483,6 +490,21 @@
                     }
                 }
             });
+
+            const timelineChart = new Chart(timelineCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Average Completion Time'],
+                    datasets: [{
+                        label: 'Completion Time (hrs)',
+                        data: [data.avg_completion_time],
+                        fill: false,
+                        borderColor: '#FF5733',
+                        tension: 0.1
+                    }]
+                }
+            });
+
 
             // Completion Status Chart
             const completionCtx = document.getElementById('completionChart').getContext('2d');
@@ -511,7 +533,7 @@
                 }
             });
 
-            return { priorityChart, completionChart };
+            return { priorityChart, completionChart , timelineChart  };
         }
 
         // Update charts with new data

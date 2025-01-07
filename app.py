@@ -3,9 +3,25 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 from datetime import datetime , timedelta
 import csv
 import os
+import sys
+import threading
 import uuid
+import webview 
 
-app = Flask(__name__)
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    
+    return os.path.join(base_path, relative_path)
+
+# Modify Flask app initialization
+app = Flask(__name__,
+           template_folder=resource_path('templates'),
+           static_folder=resource_path('static'))
 
 # CSV file setup
 TASKS_FILE = 'tasks.csv'
@@ -46,7 +62,7 @@ def get_analytics_data(time_filter='all'):
         'medium': len([t for t in filtered_tasks if t['importance'] == 'medium']),
         'low': len([t for t in filtered_tasks if t['importance'] == 'low'])
     }
-    print(filtered_tasks)  # Check if tasks are being filtered correctly.
+    # print(filtered_tasks)  # Check if tasks are being filtered correctly.
      
     
     # Average completion time
@@ -200,6 +216,20 @@ def delete_all_tasks():
         writer.writeheader()
     return redirect(url_for('index'))
 
+def run_flask():
+    app.run(debug=True, use_reloader=False, threaded=True)
+
+# Start the Flask app and the webview
+def start_desktop_app():
+    threading.Thread(target=run_flask).start()
+
+    # Create and show the WebView window
+    webview.create_window('Task Manager', 'http://127.0.0.1:5000')  # Point to your Flask app URL
+    webview.start()
+    
+
+# if __name__ == '__main__':
+#     init_csv()
+#     app.run(debug=True)
 if __name__ == '__main__':
-    init_csv()
-    app.run(debug=True)
+    start_desktop_app()
